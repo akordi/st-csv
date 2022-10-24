@@ -1,14 +1,14 @@
-const https = require("https");
-const { exit } = require("process");
-let url = "https://services.e-st.lv/m2m/get-object-list";
-console.log(process.argv);
-const apiKey = process.arcgv[2];
-if(!apiKey || apiKey.length != 20){
-  exit;
+const apiKey = process.argv[2];
+if (!apiKey) {
+  console.log("API key required");
+  process.exit(1);
 }
-fs = require('fs');
+const https = require("https");
+const fs = require('fs');
 
+let url = "https://services.e-st.lv/m2m/get-object-list";
 
+let result = {};
 var request = https
   .get(
     url,
@@ -26,9 +26,15 @@ var request = https
       });
 
       res.on("end", function () {
-        var response = JSON.parse(body);
-        console.log(response);
-        //getConsumption();
+        result = JSON.parse(body);
+
+        // flatOList.forEach((o, i)=> {
+        //   getConsumption(o,i);
+        // })
+
+        getConsumption(result.oList[0], 0, true);
+
+
       });
     }
   )
@@ -37,7 +43,8 @@ var request = https
   });
 request.end();
 
-function getConsumption(oEIC) {
+function getConsumption(o, i, last) {
+  let oEIC = o.oEIC;
   url = `https://services.e-st.lv/m2m/get-object-consumption?oEIC=${oEIC}&dF=2022-09-01T00:00:00.000Z&dT=2022-10-01T00:00:00.000Z`;
 
   var request = https
@@ -58,25 +65,10 @@ function getConsumption(oEIC) {
 
         res.on("end", function () {
           var response = JSON.parse(body);
-          console.log(response);
-
-          let result = [];
-          let stringResult = ''
-          response.forEach((meteringPoint) => {
-            let meteringPointData = { MpNr: meteringPoint.mpNr };
-            meteringPoint.mList.forEach((meter) => {
-              meter.cList.forEach((meterMeasurement) => {
-                stringResult += `${meteringPoint.mpNr};${meter.mNr};${meterMeasurement.cDt};${meterMeasurement.cVR};${meterMeasurement.cVV}\n`
-              });
-            });
-          });
-
-          fs.writeFile('consumption.csv', stringResult, function (err) {
-            if (err) return console.log(err);
-            console.log('Hello World > helloworld.txt');
-          });
-
-          console.log(JSON.stringify(result));
+          result.oList[i].consumption = response;
+          if (last) {
+            fs.writeFileSync("consumption.json", JSON.stringify(result, undefined, 2));
+          }
         });
       }
     )
@@ -85,3 +77,14 @@ function getConsumption(oEIC) {
     });
   request.end();
 }
+
+const flattenJSON = (obj = {}, res = {}, extraKey = '') => {
+  for (key in obj) {
+    if (typeof obj[key] !== 'object') {
+      res[extraKey + key] = obj[key];
+    } else {
+      flattenJSON(obj[key], res, `${extraKey}${key}/`);
+    };
+  };
+  return res;
+};
