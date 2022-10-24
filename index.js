@@ -5,37 +5,33 @@ const apiKey = process.env.API_KEY;
 fs = require('fs');
 
 
-// var request = https
-//   .get(
-//     url,
-//     {
-//       headers: {
-//         "Content-Type": "application/json",
-//         Authorization: `Bearer ${apiKey}`,
-//       },
-//     },
-//     function (res) {
-//       console.log("STATUS: " + res.statusCode);
-//       console.log("HEADERS: " + JSON.stringify(res.headers));
-//       res.setEncoding("utf8");
-//       let body = "";
-//       res.on("data", function (chunk) {
-//         body += chunk;
-//       });
+var request = https
+  .get(
+    url,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+    },
+    function (res) {
+      res.setEncoding("utf8");
+      let body = "";
+      res.on("data", function (chunk) {
+        body += chunk;
+      });
 
-//       res.on("end", function () {
-//         var response = JSON.parse(body);
-//         console.log(response);
-//         getConsumption();
-//       });
-//     }
-//   )
-//   .on("error", function (e) {
-//     console.log("Got an error: ", e);
-//   });
-// request.end();
-
-getConsumption();
+      res.on("end", function () {
+        var response = JSON.parse(body);
+        console.log(response);
+        //getConsumption();
+      });
+    }
+  )
+  .on("error", function (e) {
+    console.log("Got an error: ", e);
+  });
+request.end();
 
 function getConsumption(oEIC) {
   url = `https://services.e-st.lv/m2m/get-object-consumption?oEIC=${oEIC}&dF=2022-09-01T00:00:00.000Z&dT=2022-10-01T00:00:00.000Z`;
@@ -85,7 +81,3 @@ function getConsumption(oEIC) {
     });
   request.end();
 }
-
-
---
-Oskars
