@@ -1,7 +1,11 @@
-const http = require("http");
 const https = require("https");
+const { exit } = require("process");
 let url = "https://services.e-st.lv/m2m/get-object-list";
-const apiKey = process.env.API_KEY; 
+console.log(process.argv);
+const apiKey = process.arcgv[2];
+if(!apiKey || apiKey.length != 20){
+  exit;
+}
 fs = require('fs');
 
 
@@ -62,7 +66,7 @@ function getConsumption(oEIC) {
             let meteringPointData = { MpNr: meteringPoint.mpNr };
             meteringPoint.mList.forEach((meter) => {
               meter.cList.forEach((meterMeasurement) => {
-                stringResult +=`${meteringPoint.mpNr};${meter.mNr};${meterMeasurement.cDt};${meterMeasurement.cVR};${meterMeasurement.cVV}\n`
+                stringResult += `${meteringPoint.mpNr};${meter.mNr};${meterMeasurement.cDt};${meterMeasurement.cVR};${meterMeasurement.cVV}\n`
               });
             });
           });
